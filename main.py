@@ -3,7 +3,7 @@ from random import choice
 
 RES = WIDTH, HEIGHT = 1202, 902
 
-TILE = 100
+TILE = 150
 
 # Sets the tiling to be evenly spaced given the window sizing
 cols, rows = WIDTH // TILE, HEIGHT // TILE
@@ -55,7 +55,7 @@ class Cell:
         y = self.y * TILE
 
         if (self.solved): 
-            pygame.draw.rect(window, pygame.Color('red'), (x, y, TILE, TILE));
+            pygame.draw.rect(window, pygame.Color('black'), (x, y, TILE, TILE));
 
         # Defining the bounds of the Cell using lines
         if (self.walls['top']): 
@@ -146,9 +146,10 @@ state = "GENERATING"
 currentCell.walls['left'] = False
 gridCells[len(gridCells) - 1].walls['right'] = False
 
+visitedCount = 1
+
 # Game Loop
 window.fill(pygame.Color('grey30'));
-pygame.time.delay(10000)
 while True:
 
     # Exiting the game loop
@@ -158,11 +159,10 @@ while True:
 
     # Game State: Maze Generation
     if (state == "GENERATING"):
-        # Draw cells and grid
+    # Draw cells and grid
         [cell.draw() for cell in gridCells]
         currentCell.visited = True
         currentCell.drawCurrentCell()
-        # [pygame.draw.rect(window, colors[i], (cell.x * TILE + 5, cell.y * TILE + 5, TILE - 10, TILE - 10), border_radius=12) for i, cell in enumerate(stack)]
 
         # Chooses the next cell based randomly and on availability
         # - Availability is based on whether there is a cell on top, bottom, left or right of current
@@ -172,48 +172,37 @@ while True:
         if (nextCell):
             nextCell.visited = True
             stack.append(currentCell)
-            # colors.append((min(color, 255), 10, 100))
-            # color += 1
             removeWalls(currentCell, nextCell)
             currentCell = nextCell
+            visitedCount += 1
         elif (stack):
             currentCell = stack.pop()
 
         # Framerate
-        pygame.display.update();
+        pygame.display.update()
         clock.tick(30)
 
-        if (currentCell == gridCells[0]):
+        if (not stack and nextCell == False):
+            pygame.display.update()
             state = "SOLVING"
-            # stack = []
-            # currentCell.draw()
-            currentCell = gridCells[0]
+            currentCell.visited = False
             stack.append(currentCell)
 
+            
             print("Maze Generation Completed. Solving...")
             pygame.time.delay(1000)
-
+        
     # Game State: Solve the Maze
     elif (state == "SOLVING"):
 
-        if (currentCell == gridCells[len(gridCells) - 1]):
-            print("YOU FOUND THE PATH!!!" )
-            pygame.time.delay(5000)
-            exit()
-
+        [cell.drawSolve() for cell in gridCells]
         # Draw current cell
         currentCell.solved = True
         currentCell.drawCurrentCellSolve()
-        # print("Current Cell: ", currentCell.x, ",", currentCell.y)
-        # pygame.time.delay(200)
-        # [pygame.draw.rect(window, colors[i], (cell.x * TILE + 10, cell.y * TILE + 10, TILE - 20, TILE - 20), border_radius=12) for i, cell in enumerate(stack)]
-
+       
         # Chooses the next cell based randomly and on availability
         # - Availability is based on whether there is a cell on top, bottom, left or right of current
         nextCell = currentCell.checkNeighborsSol()
-        # if (nextCell != False):
-        #     print("Next Cell: ", nextCell.x, ",", nextCell.y)
-        #     # pygame.time.delay(200)
 
         # Traversal
         if (nextCell):
@@ -225,7 +214,13 @@ while True:
         elif (stack):
             # Backtracking
             currentCell = stack.pop()
-            currentCell.drawSolve()
-
+            
         pygame.display.update();
         clock.tick(10)        
+
+        # print(f"Row: {rows}, Cols: {cols}, Current Cell: {currentCell.x}, {currentCell.y}")
+
+        if (currentCell.x == cols - 1 and currentCell.y == rows - 1):
+            print("YOU FOUND THE PATH!!!" )
+            pygame.time.delay(5000)
+            exit()
