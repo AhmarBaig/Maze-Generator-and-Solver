@@ -1,5 +1,5 @@
 # Maze Generator and Solver
- This small project is an attempt to build a program that generates a maze and then solve it. Built with PyGame.
+ This project is a program that generates a maze and then solves itself. Built with PyGame.
 
 # How does the program work?
 - The program starts off by generating a maze from a grid of cells. The orange cell is the cell that generates the maze.
